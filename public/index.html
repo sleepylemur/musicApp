@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>musicApp</title>
+
+  <link rel="stylesheet" href="bower_components/bootstrap/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <div class="container">
+    <div role="tabpanel">
+      <ul class="nav nav-tabs" role="tablist">
+        <li class="active"><a href="#play" data-toggle="tab">Play</a></li>
+        <li><a href="#manage" data-toggle="tab">Manage</a></li>
+        <li><a href="#add" data-toggle="tab">Add</a></li>
+      </ul>
+    </div>
+
+    <div class="tab-content">
+      <div role="tabpanel" class="tab-pane active" id="play">
+
+        <!-- play pane -->
+        <div class="btn-group">
+          <button onclick="displaySongsByPlaylist()" type="button" class="btn btn-default">Playlist</button>
+          <button onclick="displaySongsBySong()" type="button" class="btn btn-default">Song</button>
+          <button onclick="displaySongsByArtist()" type="button" class="btn btn-default">Artist</button>
+        </div>
+
+        <div class="panel-group" id="accordionplay">
+          <div class="panel panel-default">
+            <div class="panel-heading">
+              <h4 class="panel-title">
+                <a data-toggle="collapse" data-parent="#accordionplay" href="#collapseOne">
+                  Nine Inch Nails
+                </a>
+              </h4>
+            </div>
+            <div id="collapseOne" class="panel-collapse collapse in">
+              <ul class="list-group">
+                <li class="list-group-item"><a href="">Terrible Lie</a><span class="badge"><em>i</em></span></li>
+                <li class="list-group-item"><a href="">I'm Drunk</a><span class="badge"><em>i</em></span></li>
+                <li class="list-group-item"><a href="">Happiness in Slavery</a><span class="badge"><em>i</em></span></li>
+              </ul>
+             <!--  <div class="panel-body">
+                
+              </div> -->
+            </div>
+          </div>
+          <div class="panel panel-default">
+            <div class="panel-heading" id="headingTwo">
+              <h4 class="panel-title">
+                <a data-toggle="collapse" data-parent="#accordionplay" href="#collapseTwo">
+                  Pink Floyd
+                </a>
+              </h4>
+            </div>
+            <div id="collapseTwo" class="panel-collapse collapse in">
+              <ul class="list-group">
+                <li class="list-group-item"><a href="">Terrible Lie</a><span class="badge"><em>i</em></span></li>
+                <li class="list-group-item"><a href="">I'm Drunk</a><span class="badge"><em>i</em></span></li>
+                <li class="list-group-item"><a href="">Happiness in Slavery</a><span class="badge"><em>i</em></span></li>
+              </ul>
+             <!--  <div class="panel-body">
+                
+              </div> -->
+            </div>
+          </div>
+        </div>
+
+        
+
+      </div>
+      <div role="tabpanel" class="tab-pane" id="manage">
+        manage
+      </div>
+      <div role="tabpanel" class="tab-pane" id="add">
+        add
+      </div>
+
+    </div>
+  </div>
+  <footer>
+    <div id="songinfo">
+      nothing playing
+    </div>
+    <div class="btn-group">
+      <button onclick="playPrev()" type="button" class="btn btn-default"><span class="glyphicon glyphicon-fast-backward"></span></button>
+      <button id="playbutton" type="button" class="btn btn-default"><span class="glyphicon glyphicon-play"></span></button>
+      <button onclick="playNext()" type="button" class="btn btn-default"><span class="glyphicon glyphicon-fast-forward"></span></button>
+    </div>
+  </footer>
+
+  <script src="bower_components/jquery/dist/jquery.min.js"></script>
+  <script src="bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
+
+  <script src="client.js"></script>
+</body>
+</html>

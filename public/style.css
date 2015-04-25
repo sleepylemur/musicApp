@@ -1,0 +1,12 @@
+footer {
+  display: block;
+  position: fixed;
+  bottom: 0;
+  text-align: center;
+  /*background: blue;*/
+  width: 100%;
+}
+
+#songinfo {
+  font-size: 30px;
+}
