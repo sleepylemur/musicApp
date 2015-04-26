@@ -14,16 +14,16 @@
 var currentSongId = -1, currentSongGroupId = 0, currentSongGroupType = "song";
 var mrfloat = document.getElementById("mrfloat");
 
-var songsByArtist;
-loadSongsByArtist();
+// var songsByArtist;
+// loadSongsByArtist();
 
-function loadSongsByArtist() {
-  songsByArtist = {};
-  for (var i=0; i<songsdb.length; i++) {
-    if (typeof songsByArtist[songsdb[i].artist] === 'undefined') songsByArtist[songsdb[i].artist] = {};
-    songsByArtist[songsdb[i].artist][i] = songsdb[i];
-  }
-}
+// function loadSongsByArtist() {
+//   songsByArtist = {};
+//   for (var i=0; i<songsdb.length; i++) {
+//     if (typeof songsByArtist[songsdb[i].artist] === 'undefined') songsByArtist[songsdb[i].artist] = {};
+//     songsByArtist[songsdb[i].artist][i] = songsdb[i];
+//   }
+// }
 
 
 var songInfoDiv = document.getElementById("songinfo");
@@ -102,24 +102,34 @@ function displaySongsByArtist(targetdiv,linker,grouplinker) {
 function displaySongsByPlaylist(targetdiv,linker,grouplinker) {
   targetdiv.innerHTML = "";
   var playlistid = 0;
-  for (playlistName in playlists) {
-    targetdiv.appendChild(
-      createAccordionNode(
-        targetdiv,
-        playlistid++,
-        playlistName,
-        playlists[playlistName].map(function(songid) {return songsdb[songid];}),
-        "playlist",
-        linker,
-        grouplinker
-      )
-    );
-  }
+  getServerData("/songs?playlist=", function(songs) {
+    var playlists = {};
+    songs.forEach(function(song) {
+      if (typeof playlists[song.playlist] === 'undefined') playlists[song.playlist] = [];
+      if (song.id !== null) { // empty playlists will have 1 song of nulls returned
+        playlists[song.playlist].push({id:song.id, name:song.name, artist:song.artist, position:song.position});
+      }
+    });
+    console.log(playlists);
+    for (playlistName in playlists) {
+      targetdiv.appendChild(
+        createAccordionNode(
+          targetdiv,
+          playlistid++,
+          playlistName,
+          playlists[playlistName],
+          "playlist",
+          linker,
+          grouplinker
+        )
+      );
+    }
+  });
 }
 
 function displaySongsBySong(targetdiv,linker) {
   targetdiv.innerHTML = "";
-  targetdiv.appendChild(createSongListNode(songsdb,0,"song",linker));
+  // targetdiv.appendChild(createSongListNode(songsdb,0,"song",linker));
 }
 
 function playSong(id, groupid, grouptype,evt) {
@@ -132,28 +142,28 @@ function playSong(id, groupid, grouptype,evt) {
 }
 
 function playPrev() { // still needs artist implemented
-  if (currentSongGroupType === "song") {
-    currentSongId -= 1;
-    if (currentSongId < 0) currentSongId = songsdb.length-1;
-  } else if (currentSongGroupType === "playlist") {
-    var playlist = playlists[Object.keys(playlists)[currentSongGroupId]];
-    var index = playlist.indexOf(currentSongId) - 1;
-    if (index < 0) index = playlist.length-1;
-    currentSongId = playlist[index];
-  }
-  songInfoDiv.innerHTML = songsdb[currentSongId].name;
+  // if (currentSongGroupType === "song") {
+  //   currentSongId -= 1;
+  //   if (currentSongId < 0) currentSongId = songsdb.length-1;
+  // } else if (currentSongGroupType === "playlist") {
+  //   var playlist = playlists[Object.keys(playlists)[currentSongGroupId]];
+  //   var index = playlist.indexOf(currentSongId) - 1;
+  //   if (index < 0) index = playlist.length-1;
+  //   currentSongId = playlist[index];
+  // }
+  // songInfoDiv.innerHTML = songsdb[currentSongId].name;
 }
 function playNext() { // still needs artist implemented
-  if (currentSongGroupType === "song") {
-    currentSongId += 1;
-    if (currentSongId >= songsdb.length) currentSongId = 0;
-  } else if (currentSongGroupType === "playlist") {
-    var playlist = playlists[Object.keys(playlists)[currentSongGroupId]];
-    var index = playlist.indexOf(currentSongId) + 1;
-    if (index >= playlist.length) index = 0;
-    currentSongId = playlist[index];
-  }
-  songInfoDiv.innerHTML = songsdb[currentSongId].name;
+  // if (currentSongGroupType === "song") {
+  //   currentSongId += 1;
+  //   if (currentSongId >= songsdb.length) currentSongId = 0;
+  // } else if (currentSongGroupType === "playlist") {
+  //   var playlist = playlists[Object.keys(playlists)[currentSongGroupId]];
+  //   var index = playlist.indexOf(currentSongId) + 1;
+  //   if (index >= playlist.length) index = 0;
+  //   currentSongId = playlist[index];
+  // }
+  // songInfoDiv.innerHTML = songsdb[currentSongId].name;
 }
 
 
@@ -314,6 +324,17 @@ function deletePanePlaylistLinker( elmt, groupid) {
           //     </div> -->
           //   </div>
           // </div>
+
+// ***************** server AJAX helpers *****************
+
+function getServerData(route, next) {
+  var xhr = new XMLHttpRequest();
+  xhr.open("GET","http://localhost:3000"+route,true);
+  xhr.onload = function() {
+    next(JSON.parse(xhr.response));
+  };
+  xhr.send();
+}
 
 
 // ***************** player interface at bottom *****************
