@@ -12,6 +12,82 @@ app.get('/', function(req,res) {
   res.render('index.html');
 });
 
+// get /song/position/pos?next=(next|prev) with optional args search and (playlist or artist) - steps through current playing songgroup
+//   example: get /song/2?next=next&search=nine+inch+nails&playlist=happy+songs
+
+app.get('/song/position/:pos', function(req,res) {
+  if (typeof req.query.playlist !== 'undefined') {
+    // step through songs by playlist
+    if (typeof req.query.search !== 'undefined') {
+      var search = "%"+req.query.search+"%";
+      db.all("SELECT songs.id, songs.name, songs.artist FROM "+
+        "songs JOIN playlistsongs ON songs.id = playlistsongs.songid "+
+        "WHERE playlistsongs.name = ? AND (songs.name LIKE ? OR songs.artist LIKE ?) ORDER BY playlistsongs.position",
+        req.query.playlist, search, search, function(err,data) {
+          if (err) console.log(err);
+          getNext(data);
+        }
+      );
+    } else {
+      db.all("SELECT songs.id, songs.name, songs.artist FROM "+
+        "songs JOIN playlistsongs ON songs.id = playlistsongs.songid "+
+        "WHERE playlistsongs.name = ? ORDER BY playlistsongs.position",
+        req.query.playlist, function(err,data) {
+          if (err) console.log(err);
+          getNext(data);
+        }
+      );
+    }
+  } else if (typeof req.query.artist !== 'undefined') {
+    // step through songs by artist
+    if (typeof req.query.search !== 'undefined') {
+      var search = "%"+req.query.search+"%";
+      db.all("SELECT id,name,artist FROM songs WHERE artist = ? AND name LIKE ? ORDER BY name", req.query.artist, search, function(err,data) {
+        if (err) console.log(err);
+        getNext(data);
+      });
+    } else {
+      db.all("SELECT id,name,artist FROM songs WHERE artist = ? ORDER BY name", req.query.artist, function(err,data) {
+        if (err) console.log(err);
+        getNext(data);
+      });
+    }
+  } else {
+    // step through all songs
+    if (typeof req.query.search !== 'undefined') {
+      var search = "%"+req.query.search+"%";
+      db.all("SELECT id,name,artist FROM songs WHERE song LIKE ? OR artist LIKE ? ORDER BY name", search, search, function(err,data) {
+        if (err) console.log(err);
+        getNext(data);
+      });
+    } else {
+      db.all("SELECT id,name,artist FROM songs ORDER BY name", function(err,data) {
+        if (err) console.log(err);
+        getNext(data);
+      });
+    }
+  }
+  function getNext(songs) {
+    var index = req.params.pos;
+    if (req.query.next === "prev") { // step through songs backwards
+      index--;
+    } else { // step through songs forwards
+      index++;
+    }
+    if (index < 0) index = songs.length - 1;
+    else if (index >= songs.length) index = 0;
+    res.json({position:index, song:songs[index]});
+  }
+});
+
+// returns info on song
+app.get("/song/:id", function(req,res) {
+  // simple song request
+  db.get("SELECT id,name,artist FROM songs WHERE id = ?", req.params.id, function(err,data) {
+    res.json(data);
+  });
+});
+
 app.get('/songs', function(req,res) {
   if (typeof req.query.playlist !== 'undefined') {
     if (req.query.playlist.length === 0) {
@@ -64,20 +140,20 @@ app.get('/songs', function(req,res) {
     if (typeof req.query.search !== 'undefined') {
       // songs by artist with search
       var search = "%"+req.query.search+"%";
-      db.all("SELECT id,name,artist FROM songs WHERE artist = ? AND (name LIKE ? OR artist LIKE ?)",
+      db.all("SELECT id,name,artist FROM songs WHERE artist = ? AND (name LIKE ? OR artist LIKE ?) ORDER BY name",
         req.query.artist, search, search, function(err,data) {
           res.json(data);
         }
       );
     } else {
       // songs by artist
-      db.all("SELECT id,name,artist FROM songs WHERE artist = ?",req.query.artist, function(err,data) {
+      db.all("SELECT id,name,artist FROM songs WHERE artist = ? ORDER BY name",req.query.artist, function(err,data) {
         res.json(data);
       });
     }
   } else {
     // retrieve all songs
-    db.all("SELECT id,name,artist FROM songs", function(err,data) {
+    db.all("SELECT id,name,artist FROM songs ORDER BY name", function(err,data) {
       res.json(data);
     });
   }

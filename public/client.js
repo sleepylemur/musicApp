@@ -1,30 +1,8 @@
 
 // ***************** initialization *****************
 
-// var songsdb = [
-//   {id:0, name:'The Great Gig in the Sky', artist:'Pink Floyd'},
-//   {id:1, name:'Time', artist:'Pink Floyd'},
-//   {id:2, name:'Is There Anybody Out There?', artist:'Pink Floyd'},
-//   {id:3, name:'Terrible Lie', artist:'Nine Inch Nails'},
-//   {id:4, name:'Happiness in Slavery', artist:'Nine Inch Nails'},
-//   {id:5, name:'Hurt', artist:'Nine Inch Nails'}
-// ];
-
-// var playlists = {"Playlist 1":[1,4,5], "Playlist2": [3,5]};
-var currentSongId = -1, currentSongGroupId = 0, currentSongGroupType = "song";
+var currentSongId = -1, currentSongGroupName = "", currentSongGroupType = "song", currentSongPosition = -1;
 var mrfloat = document.getElementById("mrfloat");
-
-// var songsByArtist;
-// loadSongsByArtist();
-
-// function loadSongsByArtist() {
-//   songsByArtist = {};
-//   for (var i=0; i<songsdb.length; i++) {
-//     if (typeof songsByArtist[songsdb[i].artist] === 'undefined') songsByArtist[songsdb[i].artist] = {};
-//     songsByArtist[songsdb[i].artist][i] = songsdb[i];
-//   }
-// }
-
 
 var songInfoDiv = document.getElementById("songinfo");
 
@@ -87,16 +65,21 @@ function createPlaylist(elmt,evt) {
 // ***************** play button response functions *****************
 
 function displaySongsByArtist(targetdiv,linker,grouplinker) {
-  var artists = Object.keys(songsByArtist);
-  targetdiv.innerHTML = "";
-  for (var artistid = 0; artistid < artists.length; artistid++) {
-    var songsobj = songsByArtist[artists[artistid]];
-    var songarray = Object.keys(songsobj).map(function(key){return songsobj[key];});
+  getServerData("/songs", function(songs) {
+    var artists = {};
+    songs.forEach(function(song) {
+      if (typeof artists[song.artist] === 'undefined') artists[song.artist] = [];
+      artists[song.artist].push(song);
+    });
 
-    targetdiv.appendChild(
-      createAccordionNode(targetdiv,artistid, songarray[0].artist, songarray,"artist",linker,grouplinker)
-    );
-  }
+    targetdiv.innerHTML = "";
+    var artistid = 0;
+    for (artistname in artists) {
+      targetdiv.appendChild(
+        createAccordionNode(targetdiv,artistid++, artistname, artists[artistname],"artist",linker,grouplinker)
+      );
+    }
+  });
 }
 
 function displaySongsByPlaylist(targetdiv,linker,grouplinker) {
@@ -129,41 +112,36 @@ function displaySongsByPlaylist(targetdiv,linker,grouplinker) {
 
 function displaySongsBySong(targetdiv,linker) {
   targetdiv.innerHTML = "";
-  // targetdiv.appendChild(createSongListNode(songsdb,0,"song",linker));
+  getServerData("/songs", function(songs) {
+    targetdiv.appendChild(createSongListNode(songs,0,"song",linker));
+  });
 }
 
-function playSong(id, groupid, grouptype,evt) {
+function playSong(position, id, groupid, grouptype,evt) {
   // console.log(arguments);
   evt.preventDefault();
   currentSongId = id;
-  currentSongGroupId = groupid;
+  currentSongPosition = position;
+  currentSongGroupName = groupid;
   currentSongGroupType = grouptype;
-  songInfoDiv.innerHTML = songsdb[id].name;
+  getServerData("/song/"+id, function(song) {
+    songInfoDiv.innerHTML = song.name;
+  });
 }
 
-function playPrev() { // still needs artist implemented
-  // if (currentSongGroupType === "song") {
-  //   currentSongId -= 1;
-  //   if (currentSongId < 0) currentSongId = songsdb.length-1;
-  // } else if (currentSongGroupType === "playlist") {
-  //   var playlist = playlists[Object.keys(playlists)[currentSongGroupId]];
-  //   var index = playlist.indexOf(currentSongId) - 1;
-  //   if (index < 0) index = playlist.length-1;
-  //   currentSongId = playlist[index];
-  // }
-  // songInfoDiv.innerHTML = songsdb[currentSongId].name;
+function playPrev() {
+  getServerData("/song/position/"+currentSongPosition+"?next=prev&"+currentSongGroupType+"="+currentSongGroupName, function(data) {
+    currentSongPosition = data.position;
+    currentSongId = data.song.id;
+    songInfoDiv.innerHTML = data.song.name;
+  });
 }
-function playNext() { // still needs artist implemented
-  // if (currentSongGroupType === "song") {
-  //   currentSongId += 1;
-  //   if (currentSongId >= songsdb.length) currentSongId = 0;
-  // } else if (currentSongGroupType === "playlist") {
-  //   var playlist = playlists[Object.keys(playlists)[currentSongGroupId]];
-  //   var index = playlist.indexOf(currentSongId) + 1;
-  //   if (index >= playlist.length) index = 0;
-  //   currentSongId = playlist[index];
-  // }
-  // songInfoDiv.innerHTML = songsdb[currentSongId].name;
+function playNext() {
+  getServerData("/song/position/"+currentSongPosition+"?next=next&"+currentSongGroupType+"="+currentSongGroupName, function(data) {
+    currentSongPosition = data.position;
+    currentSongId = data.song.id;
+    songInfoDiv.innerHTML = data.song.name;
+  });
 }
 
 
@@ -219,14 +197,14 @@ function handleDragEnd(elmt, evt) {
 
 // helper function to create an accordion songlist panel
 
-function createAccordionNode(parentdiv, groupid, heading, songs, grouptype, linker, grouplinker) {
+function createAccordionNode(parentdiv, groupdivid, groupname, songs, grouptype, linker, grouplinker) {
 
   // create accordion heading
   var outerpanel = document.createElement("div");
   outerpanel.setAttribute("class","panel panel-default");
   var panelheading = document.createElement("div");
   panelheading.setAttribute("class","panel-heading");
-  var collapseid = grouplinker(panelheading, groupid);
+  var collapseid = grouplinker(panelheading, groupdivid);
   var title = document.createElement("h4");
   title.setAttribute("class","panel-title");
   // var titlelink = document.createElement("a");
@@ -236,7 +214,7 @@ function createAccordionNode(parentdiv, groupid, heading, songs, grouptype, link
   // titlelink.setAttribute("href", "#collapse"+groupid);
   // titlelink.appendChild(document.createTextNode(heading));
   // title.appendChild(titlelink);
-  title.appendChild(document.createTextNode(heading));
+  title.appendChild(document.createTextNode(groupname));
   panelheading.appendChild(title);
   outerpanel.appendChild(panelheading);
 
@@ -245,7 +223,7 @@ function createAccordionNode(parentdiv, groupid, heading, songs, grouptype, link
   collapse.setAttribute("id", collapseid);
   collapse.setAttribute("class","panel-collapse collapse");
   collapse.setAttribute("data-parent","#"+parentdiv.id);
-  collapse.appendChild(createSongListNode(songs, groupid, grouptype, linker));
+  collapse.appendChild(createSongListNode(songs, groupname, grouptype, linker));
   outerpanel.appendChild(collapse);
   return outerpanel;
 }
@@ -253,7 +231,7 @@ function createAccordionNode(parentdiv, groupid, heading, songs, grouptype, link
 
 // helper function to create ul of songs
 
-function createSongListNode(songs, groupid, grouptype, linker) {
+function createSongListNode(songs, groupname, grouptype, linker) {
   var listgroup = document.createElement("ul");
   listgroup.setAttribute("class","list-group");
   for (var i=0; i<songs.length; i++) {
@@ -261,7 +239,7 @@ function createSongListNode(songs, groupid, grouptype, linker) {
     li.setAttribute("class","list-group-item");
     var a = document.createElement("a");
     a.setAttribute("href","#");
-    linker(li, songs[i].id, groupid, grouptype);
+    linker(li, i, songs[i].id, groupname, grouptype);
     // a.addEventListener("click", playSong.bind(null, songs[i].id, groupid, grouptype));
     
     // var hammertime = attachHammer(a);
@@ -278,26 +256,26 @@ function createSongListNode(songs, groupid, grouptype, linker) {
 
 // callback for creating links for play pane
 
-function playPaneSongLinker( elmt, songid, groupid, grouptype) {
-  elmt.addEventListener('click', playSong.bind(null, songid, groupid, grouptype));
+function playPaneSongLinker( elmt, position, songid, groupname, grouptype) {
+  elmt.addEventListener('click', playSong.bind(null, position, songid, groupname, grouptype));
 }
-function playPaneGroupLinker( elmt, groupid ) {
-  elmt.addEventListener('click', function(elmt) {$("#pcollapse"+groupid).collapse('toggle');}.bind(null,elmt));
-  return "pcollapse"+groupid;
+function playPaneGroupLinker( elmt, groupdivid ) {
+  elmt.addEventListener('click', function(elmt) {$("#pcollapse"+groupdivid).collapse('toggle');}.bind(null,elmt));
+  return "pcollapse"+groupdivid;
 }
 
-function deletePaneSongLinker( elmt, songid, groupid, grouptype) {
+function deletePaneSongLinker( elmt, position, songid, groupname, grouptype) {
   attachHammer(elmt);
 }
 
-function deletePanePlaylistLinker( elmt, groupid) {
+function deletePanePlaylistLinker( elmt, groupdivid) {
   // elmt.addEventListener('click', function(elmt) {
   //   console.log(target);
   //   $(target).collapse('toggle');
   // }.bind(null,elmt));
   var hammertime = attachHammer(elmt);
-  hammertime.on('tap', function(elmt) {$("#dcollapse"+groupid).collapse('toggle');}.bind(null,elmt));
-  return "dcollapse"+groupid;
+  hammertime.on('tap', function(elmt) {$("#dcollapse"+groupdivid).collapse('toggle');}.bind(null,elmt));
+  return "dcollapse"+groupdivid;
   // elmt.addEventListener('click', function(elmt) {$(target).collapse('toggle');}.bind(null,elmt));
   // hammertime.on('tap', function(elmt) {$(target).collapse('toggle');}.bind(null,elmt));
 }
