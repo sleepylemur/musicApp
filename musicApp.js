@@ -12,6 +12,13 @@ app.get('/', function(req,res) {
   res.render('index.html');
 });
 
+app.get('/playlistnames', function(req,res) {
+  db.all("SELECT name FROM playlists", function(err,data) {
+    if (err) console.log(err);
+    res.json(data);
+  });
+});
+
 // get /song/position/pos?next=(next|prev) with optional args search and (playlist or artist) - steps through current playing songgroup
 //   example: get /song/2?next=next&search=nine+inch+nails&playlist=happy+songs
 
@@ -166,17 +173,19 @@ app.post('/playlists', function(req,res) {
   });
 });
 
-app.delete('/playlists/:name', function(req,res) {
+app.delete('/playlist/:name', function(req,res) {
   db.run('DELETE FROM playlists WHERE name = ?', req.params.name, function(err) {
     if (err) throw(err);
     res.end();
   });
 });
 app.delete('/playlist/:name/position/:pos', function(req,res) {
-  db.run('DELETE FROM playlistsongs WHERE name = ? AND position = ?', function(err) {
-    if (err) throw(err);
-    res.end();
-  });
+  db.run('DELETE FROM playlistsongs WHERE ROWID IN (SELECT ROWID FROM playlistsongs WHERE name=? ORDER BY position LIMIT 1 OFFSET ?)',
+    req.params.name, req.params.pos, function(err) {
+      if (err) console.log(err);
+      res.end();
+    }
+  );
 });
 
 app.listen(3000, function() {console.log('started musicApp on 3000');});
