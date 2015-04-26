@@ -34,9 +34,9 @@ var songInfoDiv = document.getElementById("songinfo");
 var accordionPlay = document.getElementById("accordionplay");
 
 // add display-by song/playlist/artist button eventlisteners
-document.getElementById("playpaneplaylistbutton").addEventListener('click',displaySongsByPlaylist.bind(null,accordionPlay,playPaneSongLinker));
-document.getElementById("playpanesongbutton").addEventListener('click',displaySongsBySong.bind(null,accordionPlay,playPaneSongLinker));
-document.getElementById("playpaneartistbutton").addEventListener('click',displaySongsByArtist.bind(null,accordionPlay,playPaneSongLinker));
+document.getElementById("playpaneplaylistbutton").addEventListener('click',displaySongsByPlaylist.bind(null,accordionPlay,playPaneSongLinker, playPaneGroupLinker));
+document.getElementById("playpanesongbutton").addEventListener('click',displaySongsBySong.bind(null,accordionPlay,playPaneSongLinker, null));
+document.getElementById("playpaneartistbutton").addEventListener('click',displaySongsByArtist.bind(null,accordionPlay,playPaneSongLinker, playPaneGroupLinker));
 
 displaySongsBySong(accordionPlay,playPaneSongLinker);
 playNext();
@@ -45,13 +45,48 @@ playNext();
 // ***************** manage pane init *****************
 
 var accordionDelete = document.getElementById("accordiondelete");
+document.getElementById("buttonnewplaylist").addEventListener('click', newPlaylist);
 
-displaySongsByPlaylist(accordionDelete,deletePaneSongLinker);
+displaySongsByPlaylist(accordionDelete,deletePaneSongLinker, deletePanePlaylistLinker);
 
 
-// ***************** button response functions *****************
+// ***************** manage button response functions *****************
 
-function displaySongsByArtist(targetdiv,linker) {
+function newPlaylist() {
+  var textbox = document.createElement("input");
+  textbox.setAttribute('type', 'text');
+  textbox.setAttribute('value', 'new playlist');
+  textbox.addEventListener('blur', createPlaylist.bind(null,textbox));
+
+  if (accordionDelete.children.length === 0) {
+    accordionDelete.appendChild(textbox);
+  } else {
+    accordionDelete.insertBefore(textbox,accordionDelete.children[0]);
+  }
+  textbox.select();
+}
+
+function createPlaylist(elmt,evt) {
+  var newname = elmt.value;
+  var counter = 2;
+  while (typeof playlists[newname] !== 'undefined') {
+    // while newname is taken
+    newname = elmt.value + " "+counter++;
+  }
+
+  var newplaylists = {};
+  newplaylists[newname] = [];
+  for (key in playlists) {
+    newplaylists[key] = playlists[key];
+  }
+  playlists = newplaylists;
+  elmt.parentNode.removeChild(elmt);
+  displaySongsByPlaylist(accordionDelete,deletePaneSongLinker,deletePanePlaylistLinker);
+}
+
+// ***************** play button response functions *****************
+
+function displaySongsByArtist(targetdiv,linker,grouplinker) {
   var artists = Object.keys(songsByArtist);
   targetdiv.innerHTML = "";
   for (var artistid = 0; artistid < artists.length; artistid++) {
@@ -59,12 +94,12 @@ function displaySongsByArtist(targetdiv,linker) {
     var songarray = Object.keys(songsobj).map(function(key){return songsobj[key];});
 
     targetdiv.appendChild(
-      createAccordionNode(artistid, songarray[0].artist, songarray,"artist",linker)
+      createAccordionNode(artistid, songarray[0].artist, songarray,"artist",linker,grouplinker)
     );
   }
 }
 
-function displaySongsByPlaylist(targetdiv,linker) {
+function displaySongsByPlaylist(targetdiv,linker,grouplinker) {
   targetdiv.innerHTML = "";
   var playlistid = 0;
   for (playlistName in playlists) {
@@ -74,7 +109,8 @@ function displaySongsByPlaylist(targetdiv,linker) {
         playlistName,
         playlists[playlistName].map(function(songid) {return songsdb[songid];}),
         "playlist",
-        linker
+        linker,
+        grouplinker
       )
     );
   }
@@ -128,6 +164,7 @@ function attachHammer(elmt) {
   hammertime.on('pan', handleDrag.bind(null,elmt));
   hammertime.get('pan').set({ direction: Hammer.DIRECTION_ALL });
   hammertime.on('tap', handleDragEnd.bind(null,elmt));
+  return hammertime;
 }
 
 function handleDragStart(elmt, evt) {
@@ -138,6 +175,7 @@ function handleDragStart(elmt, evt) {
   mrfloat.style.height = bounds.height+"px";
   mrfloat.innerHTML = elmt.innerHTML;
   mrfloat.style.display = "inline-block";
+  elmt.style.background = "lightgray";
 }
 
 function handleDrag(elmt, evt) {
@@ -156,6 +194,11 @@ function handleDrag(elmt, evt) {
 }
 
 function handleDragEnd(elmt, evt) {
+  if (evt.deltaX < -100) {
+    elmt.parentNode.removeChild(elmt);
+  } else {
+    elmt.style.background = "white";
+  }
   mrfloat.style.display = "none";
   mrfloat.style.background = "white";
 }
@@ -165,28 +208,31 @@ function handleDragEnd(elmt, evt) {
 
 // helper function to create an accordion songlist panel
 
-function createAccordionNode(groupid, heading, songs, grouptype, linker) {
+function createAccordionNode(groupid, heading, songs, grouptype, linker, grouplinker) {
 
   // create accordion heading
   var outerpanel = document.createElement("div");
   outerpanel.setAttribute("class","panel panel-default");
   var panelheading = document.createElement("div");
   panelheading.setAttribute("class","panel-heading");
+  var collapseid = grouplinker(panelheading, groupid);
   var title = document.createElement("h4");
   title.setAttribute("class","panel-title");
-  var titlelink = document.createElement("a");
-  titlelink.setAttribute("class", "collapsed");
-  titlelink.setAttribute("data-toggle", "collapse");
-  titlelink.setAttribute("data-parent", "#accordionplay");
-  titlelink.setAttribute("href", "#collapse"+groupid);
-  titlelink.appendChild(document.createTextNode(heading));
-  title.appendChild(titlelink);
+  title.setAttribute("data-parent","#accordionplay");
+  // var titlelink = document.createElement("a");
+  // titlelink.setAttribute("class", "collapsed");
+  // titlelink.setAttribute("data-toggle", "collapse");
+  // titlelink.setAttribute("data-parent", "#accordionplay");
+  // titlelink.setAttribute("href", "#collapse"+groupid);
+  // titlelink.appendChild(document.createTextNode(heading));
+  // title.appendChild(titlelink);
+  title.appendChild(document.createTextNode(heading));
   panelheading.appendChild(title);
   outerpanel.appendChild(panelheading);
 
   // create song list for artist
   var collapse = document.createElement("div");
-  collapse.setAttribute("id","collapse"+groupid);
+  collapse.setAttribute("id", collapseid);
   collapse.setAttribute("class","panel-collapse collapse");
   collapse.appendChild(createSongListNode(songs, groupid, grouptype, linker));
   outerpanel.appendChild(collapse);
@@ -224,9 +270,25 @@ function createSongListNode(songs, groupid, grouptype, linker) {
 function playPaneSongLinker( elmt, songid, groupid, grouptype) {
   elmt.addEventListener('click', playSong.bind(null, songid, groupid, grouptype));
 }
+function playPaneGroupLinker( elmt, groupid ) {
+  elmt.addEventListener('click', function(elmt) {$("#pcollapse"+groupid).collapse('toggle');}.bind(null,elmt));
+  return "pcollapse"+groupid;
+}
 
 function deletePaneSongLinker( elmt, songid, groupid, grouptype) {
   attachHammer(elmt);
+}
+
+function deletePanePlaylistLinker( elmt, groupid) {
+  // elmt.addEventListener('click', function(elmt) {
+  //   console.log(target);
+  //   $(target).collapse('toggle');
+  // }.bind(null,elmt));
+  var hammertime = attachHammer(elmt);
+  hammertime.on('tap', function(elmt) {$("#dcollapse"+groupid).collapse('toggle');}.bind(null,elmt));
+  return "dcollapse"+groupid;
+  // elmt.addEventListener('click', function(elmt) {$(target).collapse('toggle');}.bind(null,elmt));
+  // hammertime.on('tap', function(elmt) {$(target).collapse('toggle');}.bind(null,elmt));
 }
 
 

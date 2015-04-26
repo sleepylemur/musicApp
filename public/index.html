@@ -17,7 +17,7 @@
       <ul class="nav nav-tabs" role="tablist">
         <li class="active"><a href="#play" data-toggle="tab">Play</a></li>
         <li><a href="#manage" data-toggle="tab">Manage</a></li>
-        <li><a href="#add" data-toggle="tab">Add</a></li>
+        <li><a href="#acquire" data-toggle="tab">Acquire</a></li>
       </ul>
     </div>
 
@@ -31,49 +31,7 @@
           <button id="playpaneartistbutton" type="button" class="btn btn-default">Artist</button>
         </div>
 
-        <div class="panel-group" id="accordionplay">
-          <div class="panel panel-default">
-            <div class="panel-heading">
-              <h4 class="panel-title">
-                <a data-toggle="collapse" data-parent="#accordionplay" href="#collapseOne">
-                  Nine Inch Nails
-                </a>
-              </h4>
-            </div>
-            <div id="collapseOne" class="panel-collapse collapse in">
-              <ul class="list-group">
-                <li class="list-group-item"><a href="">Terrible Lie</a><span class="badge"><em>i</em></span></li>
-                <li class="list-group-item"><a href="">I'm Drunk</a><span class="badge"><em>i</em></span></li>
-                <li class="list-group-item"><a href="">Happiness in Slavery</a><span class="badge"><em>i</em></span></li>
-              </ul>
-             <!--  <div class="panel-body">
-                
-              </div> -->
-            </div>
-          </div>
-          <div class="panel panel-default">
-            <div class="panel-heading" id="headingTwo">
-              <h4 class="panel-title">
-                <a data-toggle="collapse" data-parent="#accordionplay" href="#collapseTwo">
-                  Pink Floyd
-                </a>
-              </h4>
-            </div>
-            <div id="collapseTwo" class="panel-collapse collapse in">
-              <ul class="list-group">
-                <li class="list-group-item"><a href="">Terrible Lie</a><span class="badge"><em>i</em></span></li>
-                <li class="list-group-item"><a href="">I'm Drunk</a><span class="badge"><em>i</em></span></li>
-                <li class="list-group-item"><a href="">Happiness in Slavery</a><span class="badge"><em>i</em></span></li>
-              </ul>
-             <!--  <div class="panel-body">
-                
-              </div> -->
-            </div>
-          </div>
-        </div>
-
-        
-
+        <div class="panel-group" id="accordionplay"></div>
       </div>
       <div role="tabpanel" class="tab-pane" id="manage">
 
@@ -83,17 +41,15 @@
               delete
           </div>
           <div class="col-xs-10">
-            <button type="button" class="btn btn-default center-block">New Playlist</button>
-            <div class="panel-group" id="accordiondelete">
-            hi
-            </div>
+            <button  id="buttonnewplaylist" type="button" class="btn btn-default center-block">New Playlist</button>
+            <div class="panel-group" id="accordiondelete"></div>
           </div>
           <div class="col-xs-1">
-            add
+            add to playlist
           </div>
         </div>
       </div>
-      <div role="tabpanel" class="tab-pane" id="add">
+      <div role="tabpanel" class="tab-pane" id="acquire">
 
         <!-- add pane -->
         add songs to your collection here

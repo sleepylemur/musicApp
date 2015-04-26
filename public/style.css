@@ -32,10 +32,18 @@ html, body {
   /*background: blue;*/
 }
 .tab-content {
-  /*height:100%;*/
-  /*background: red;*/
+/*  height:100%;
+  background: red;*/
 }
 .full-size {
   height:100%;
   box-sizing: border-box;
+}
+
+.biglink {
+  margin: 0;
+  padding: 5px;
+  display: inline-block;
+  width: 100%;
+  background-color: blue;
 }
