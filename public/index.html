@@ -12,7 +12,7 @@
 </head>
 <body>
 
-  <div class="container">
+  <div class="container-fluid">
     <div role="tabpanel">
       <ul class="nav nav-tabs" role="tablist">
         <li class="active"><a href="#play" data-toggle="tab">Play</a></li>
@@ -21,7 +21,7 @@
       </ul>
     </div>
 
-    <div class="tab-content">
+    <div class="tab-content fullsize">
       <div role="tabpanel" class="tab-pane active" id="play">
 
         <!-- play pane -->
@@ -76,10 +76,27 @@
 
       </div>
       <div role="tabpanel" class="tab-pane" id="manage">
-        manage
+
+        <!-- playlist management pane -->
+        <div class="row">
+          <div class="col-xs-1" id="trashdiv">
+              delete
+          </div>
+          <div class="col-xs-10">
+            <button type="button" class="btn btn-default center-block">New Playlist</button>
+            <div class="panel-group" id="accordiondelete">
+            hi
+            </div>
+          </div>
+          <div class="col-xs-1">
+            add
+          </div>
+        </div>
       </div>
       <div role="tabpanel" class="tab-pane" id="add">
-        add
+
+        <!-- add pane -->
+        add songs to your collection here
       </div>
 
     </div>
@@ -95,8 +112,11 @@
     </div>
   </footer>
 
+  <div id="mrfloat">float</div>
+
   <script src="bower_components/jquery/dist/jquery.min.js"></script>
   <script src="bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
+  <script src="hammer.js"></script>
 
   <script src="client.js"></script>
 </body>

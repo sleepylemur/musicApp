@@ -12,6 +12,7 @@ var songsdb = [
 
 var playlists = {"Playlist 1":[1,4,5], "Playlist2": [3,5]};
 var currentSongId = -1, currentSongGroupId = 0, currentSongGroupType = "song";
+var mrfloat = document.getElementById("mrfloat");
 
 var songsByArtist;
 loadSongsByArtist();
@@ -27,6 +28,8 @@ function loadSongsByArtist() {
 console.log(songsByArtist);
 
 var songInfoDiv = document.getElementById("songinfo");
+// attachHammer(songInfoDiv);
+
 var accordionPlay = document.getElementById("accordionplay");
 displaySongsBySong();
 playNext();
@@ -61,7 +64,8 @@ function displaySongsBySong() {
   accordionPlay.appendChild(createSongListNode(songsdb,0,"song"));
 }
 
-function playSong(evt,id, groupid, grouptype) {
+function playSong(id, groupid, grouptype,evt) {
+  // console.log(arguments);
   evt.preventDefault();
   currentSongId = id;
   currentSongGroupId = groupid;
@@ -93,6 +97,37 @@ function playNext() {
   }
   songInfoDiv.innerHTML = songsdb[currentSongId].name;
 }
+
+
+// ***************** drag helper functions *****************
+
+function attachHammer(elmt) {
+  elmt.addEventListener('mousedown', handleDragStart.bind(null,elmt));
+  var hammertime = new Hammer(elmt);
+  hammertime.on('pan', handleDrag.bind(null,elmt));
+  return hammertime;
+}
+
+function handleDragStart(elmt, evt) {
+  var bounds = elmt.getBoundingClientRect();
+  mrfloat.style.left = bounds.left+"px";
+  mrfloat.style.top = bounds.top+"px";
+  mrfloat.style.width = bounds.width+"px";
+  mrfloat.style.height = bounds.height+"px";
+  mrfloat.innerHTML = elmt.innerHTML;
+  mrfloat.style.display = "inline-block";
+}
+
+function handleDrag(elmt, evt) {
+  if (evt.isFinal) {
+    mrfloat.style.display = "none";
+  } else {
+    var bounds = elmt.getBoundingClientRect();
+    mrfloat.style.left = bounds.left + evt.deltaX + "px";
+    mrfloat.style.top = bounds.top + evt.deltaY + "px";
+  }
+}
+
 
 // ***************** list display functions *****************
 
@@ -137,11 +172,14 @@ function createSongListNode(songs,groupid,grouptype) {
     li.setAttribute("class","list-group-item");
     var a = document.createElement("a");
     a.setAttribute("href","#");
-    a.addEventListener('click', (function(id,groupid,grouptype) {
-      return function(evt) {
-        playSong(evt,id,groupid,grouptype);
-      };
-    })(songs[i].id,groupid,grouptype));
+    a.addEventListener("click", playSong.bind(null, songs[i].id, groupid, grouptype));
+    // a.addEventListener('click', (function(id,groupid,grouptype) {
+    //   return function(evt) {
+    //     playSong(id,groupid,grouptype,evt);
+    //   };
+    // })(songs[i].id,groupid,grouptype));
+    // var hammertime = attachHammer(a);
+    // hammertime.on("tap", playSong.bind(songs[i].id,groupid,grouptype));
 
 
       // function(evt) {console.log('test');playSong(evt,songs[i].id);});

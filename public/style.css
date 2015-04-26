@@ -8,5 +8,31 @@ footer {
 }
 
 #songinfo {
+  /*display:inline-block;*/
   font-size: 30px;
+}
+
+#mrfloat {
+  position:absolute;
+  /*padding: 10px;*/
+  display:none;
+  background-color: red;
+  z-index: 10;
+}
+
+html, body {
+  height:100%;
+  box-sizing: border-box;
+}
+.container-fluid {
+  height:100%;
+  background: blue;
+}
+.tab-content {
+  /*height:100%;*/
+  background: red;
+}
+.full-size {
+  height:100%;
+  box-sizing: border-box;
 }
