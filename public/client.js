@@ -1,16 +1,16 @@
 
 // ***************** initialization *****************
 
-var songsdb = [
-  {id:0, name:'The Great Gig in the Sky', artist:'Pink Floyd'},
-  {id:1, name:'Time', artist:'Pink Floyd'},
-  {id:2, name:'Is There Anybody Out There?', artist:'Pink Floyd'},
-  {id:3, name:'Terrible Lie', artist:'Nine Inch Nails'},
-  {id:4, name:'Happiness in Slavery', artist:'Nine Inch Nails'},
-  {id:5, name:'Hurt', artist:'Nine Inch Nails'}
-];
+// var songsdb = [
+//   {id:0, name:'The Great Gig in the Sky', artist:'Pink Floyd'},
+//   {id:1, name:'Time', artist:'Pink Floyd'},
+//   {id:2, name:'Is There Anybody Out There?', artist:'Pink Floyd'},
+//   {id:3, name:'Terrible Lie', artist:'Nine Inch Nails'},
+//   {id:4, name:'Happiness in Slavery', artist:'Nine Inch Nails'},
+//   {id:5, name:'Hurt', artist:'Nine Inch Nails'}
+// ];
 
-var playlists = {"Playlist 1":[1,4,5], "Playlist2": [3,5]};
+// var playlists = {"Playlist 1":[1,4,5], "Playlist2": [3,5]};
 var currentSongId = -1, currentSongGroupId = 0, currentSongGroupType = "song";
 var mrfloat = document.getElementById("mrfloat");
 
@@ -94,7 +94,7 @@ function displaySongsByArtist(targetdiv,linker,grouplinker) {
     var songarray = Object.keys(songsobj).map(function(key){return songsobj[key];});
 
     targetdiv.appendChild(
-      createAccordionNode(artistid, songarray[0].artist, songarray,"artist",linker,grouplinker)
+      createAccordionNode(targetdiv,artistid, songarray[0].artist, songarray,"artist",linker,grouplinker)
     );
   }
 }
@@ -105,6 +105,7 @@ function displaySongsByPlaylist(targetdiv,linker,grouplinker) {
   for (playlistName in playlists) {
     targetdiv.appendChild(
       createAccordionNode(
+        targetdiv,
         playlistid++,
         playlistName,
         playlists[playlistName].map(function(songid) {return songsdb[songid];}),
@@ -208,7 +209,7 @@ function handleDragEnd(elmt, evt) {
 
 // helper function to create an accordion songlist panel
 
-function createAccordionNode(groupid, heading, songs, grouptype, linker, grouplinker) {
+function createAccordionNode(parentdiv, groupid, heading, songs, grouptype, linker, grouplinker) {
 
   // create accordion heading
   var outerpanel = document.createElement("div");
@@ -218,7 +219,6 @@ function createAccordionNode(groupid, heading, songs, grouptype, linker, groupli
   var collapseid = grouplinker(panelheading, groupid);
   var title = document.createElement("h4");
   title.setAttribute("class","panel-title");
-  title.setAttribute("data-parent","#accordionplay");
   // var titlelink = document.createElement("a");
   // titlelink.setAttribute("class", "collapsed");
   // titlelink.setAttribute("data-toggle", "collapse");
@@ -234,6 +234,7 @@ function createAccordionNode(groupid, heading, songs, grouptype, linker, groupli
   var collapse = document.createElement("div");
   collapse.setAttribute("id", collapseid);
   collapse.setAttribute("class","panel-collapse collapse");
+  collapse.setAttribute("data-parent","#"+parentdiv.id);
   collapse.appendChild(createSongListNode(songs, groupid, grouptype, linker));
   outerpanel.appendChild(collapse);
   return outerpanel;
