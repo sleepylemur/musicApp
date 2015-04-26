@@ -25,43 +25,64 @@ function loadSongsByArtist() {
   }
 }
 
-console.log(songsByArtist);
 
 var songInfoDiv = document.getElementById("songinfo");
-// attachHammer(songInfoDiv);
+
+
+// ***************** play pane init *****************
 
 var accordionPlay = document.getElementById("accordionplay");
-displaySongsBySong();
+
+// add display-by song/playlist/artist button eventlisteners
+document.getElementById("playpaneplaylistbutton").addEventListener('click',displaySongsByPlaylist.bind(null,accordionPlay,playPaneSongLinker));
+document.getElementById("playpanesongbutton").addEventListener('click',displaySongsBySong.bind(null,accordionPlay,playPaneSongLinker));
+document.getElementById("playpaneartistbutton").addEventListener('click',displaySongsByArtist.bind(null,accordionPlay,playPaneSongLinker));
+
+displaySongsBySong(accordionPlay,playPaneSongLinker);
 playNext();
 
+
+// ***************** manage pane init *****************
+
+var accordionDelete = document.getElementById("accordiondelete");
+
+displaySongsByPlaylist(accordionDelete,deletePaneSongLinker);
 
 
 // ***************** button response functions *****************
 
-function displaySongsByArtist() {
+function displaySongsByArtist(targetdiv,linker) {
   var artists = Object.keys(songsByArtist);
-  accordionPlay.innerHTML = "";
+  targetdiv.innerHTML = "";
   for (var artistid = 0; artistid < artists.length; artistid++) {
     var songsobj = songsByArtist[artists[artistid]];
     var songarray = Object.keys(songsobj).map(function(key){return songsobj[key];});
 
-    accordionPlay.appendChild(
-      createAccordionNode(artistid, songarray[0].artist, songarray,"artist")
+    targetdiv.appendChild(
+      createAccordionNode(artistid, songarray[0].artist, songarray,"artist",linker)
     );
   }
 }
 
-function displaySongsByPlaylist() {
-  accordionPlay.innerHTML = "";
+function displaySongsByPlaylist(targetdiv,linker) {
+  targetdiv.innerHTML = "";
   var playlistid = 0;
   for (playlistName in playlists) {
-    accordionPlay.appendChild(createAccordionNode(playlistid++, playlistName, playlists[playlistName].map(function(songid) {return songsdb[songid];}),"playlist"));
+    targetdiv.appendChild(
+      createAccordionNode(
+        playlistid++,
+        playlistName,
+        playlists[playlistName].map(function(songid) {return songsdb[songid];}),
+        "playlist",
+        linker
+      )
+    );
   }
 }
 
-function displaySongsBySong() {
-  accordionPlay.innerHTML = "";
-  accordionPlay.appendChild(createSongListNode(songsdb,0,"song"));
+function displaySongsBySong(targetdiv,linker) {
+  targetdiv.innerHTML = "";
+  targetdiv.appendChild(createSongListNode(songsdb,0,"song",linker));
 }
 
 function playSong(id, groupid, grouptype,evt) {
@@ -73,7 +94,7 @@ function playSong(id, groupid, grouptype,evt) {
   songInfoDiv.innerHTML = songsdb[id].name;
 }
 
-function playPrev() {
+function playPrev() { // still needs artist implemented
   if (currentSongGroupType === "song") {
     currentSongId -= 1;
     if (currentSongId < 0) currentSongId = songsdb.length-1;
@@ -85,7 +106,7 @@ function playPrev() {
   }
   songInfoDiv.innerHTML = songsdb[currentSongId].name;
 }
-function playNext() {
+function playNext() { // still needs artist implemented
   if (currentSongGroupType === "song") {
     currentSongId += 1;
     if (currentSongId >= songsdb.length) currentSongId = 0;
@@ -105,7 +126,8 @@ function attachHammer(elmt) {
   elmt.addEventListener('mousedown', handleDragStart.bind(null,elmt));
   var hammertime = new Hammer(elmt);
   hammertime.on('pan', handleDrag.bind(null,elmt));
-  return hammertime;
+  hammertime.get('pan').set({ direction: Hammer.DIRECTION_ALL });
+  hammertime.on('tap', handleDragEnd.bind(null,elmt));
 }
 
 function handleDragStart(elmt, evt) {
@@ -119,8 +141,13 @@ function handleDragStart(elmt, evt) {
 }
 
 function handleDrag(elmt, evt) {
+  if (evt.deltaX < -100) {
+    mrfloat.style.background = "red";
+  } else {
+    mrfloat.style.background = "white";
+  }
   if (evt.isFinal) {
-    mrfloat.style.display = "none";
+    handleDragEnd(elmt,evt);
   } else {
     var bounds = elmt.getBoundingClientRect();
     mrfloat.style.left = bounds.left + evt.deltaX + "px";
@@ -128,12 +155,17 @@ function handleDrag(elmt, evt) {
   }
 }
 
+function handleDragEnd(elmt, evt) {
+  mrfloat.style.display = "none";
+  mrfloat.style.background = "white";
+}
+
 
 // ***************** list display functions *****************
 
 // helper function to create an accordion songlist panel
 
-function createAccordionNode(id, heading, songs, grouptype) {
+function createAccordionNode(groupid, heading, songs, grouptype, linker) {
 
   // create accordion heading
   var outerpanel = document.createElement("div");
@@ -146,7 +178,7 @@ function createAccordionNode(id, heading, songs, grouptype) {
   titlelink.setAttribute("class", "collapsed");
   titlelink.setAttribute("data-toggle", "collapse");
   titlelink.setAttribute("data-parent", "#accordionplay");
-  titlelink.setAttribute("href", "#collapse"+id);
+  titlelink.setAttribute("href", "#collapse"+groupid);
   titlelink.appendChild(document.createTextNode(heading));
   title.appendChild(titlelink);
   panelheading.appendChild(title);
@@ -154,9 +186,9 @@ function createAccordionNode(id, heading, songs, grouptype) {
 
   // create song list for artist
   var collapse = document.createElement("div");
-  collapse.setAttribute("id","collapse"+id);
+  collapse.setAttribute("id","collapse"+groupid);
   collapse.setAttribute("class","panel-collapse collapse");
-  collapse.appendChild(createSongListNode(songs, id, grouptype));
+  collapse.appendChild(createSongListNode(songs, groupid, grouptype, linker));
   outerpanel.appendChild(collapse);
   return outerpanel;
 }
@@ -164,7 +196,7 @@ function createAccordionNode(id, heading, songs, grouptype) {
 
 // helper function to create ul of songs
 
-function createSongListNode(songs,groupid,grouptype) {
+function createSongListNode(songs, groupid, grouptype, linker) {
   var listgroup = document.createElement("ul");
   listgroup.setAttribute("class","list-group");
   for (var i=0; i<songs.length; i++) {
@@ -172,12 +204,9 @@ function createSongListNode(songs,groupid,grouptype) {
     li.setAttribute("class","list-group-item");
     var a = document.createElement("a");
     a.setAttribute("href","#");
-    a.addEventListener("click", playSong.bind(null, songs[i].id, groupid, grouptype));
-    // a.addEventListener('click', (function(id,groupid,grouptype) {
-    //   return function(evt) {
-    //     playSong(id,groupid,grouptype,evt);
-    //   };
-    // })(songs[i].id,groupid,grouptype));
+    linker(li, songs[i].id, groupid, grouptype);
+    // a.addEventListener("click", playSong.bind(null, songs[i].id, groupid, grouptype));
+    
     // var hammertime = attachHammer(a);
     // hammertime.on("tap", playSong.bind(songs[i].id,groupid,grouptype));
 
@@ -188,6 +217,16 @@ function createSongListNode(songs,groupid,grouptype) {
     listgroup.appendChild(li);
   }
   return listgroup;
+}
+
+// callback for creating links for play pane
+
+function playPaneSongLinker( elmt, songid, groupid, grouptype) {
+  elmt.addEventListener('click', playSong.bind(null, songid, groupid, grouptype));
+}
+
+function deletePaneSongLinker( elmt, songid, groupid, grouptype) {
+  attachHammer(elmt);
 }
 
 

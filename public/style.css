@@ -16,7 +16,10 @@ footer {
   position:absolute;
   /*padding: 10px;*/
   display:none;
-  background-color: red;
+  border: 1px solid black;
+  /*background-color: red;*/
+  backgroud-color: white;
+  box-shadow: 10px 5px 5px rgba(0,0,0,0.3);
   z-index: 10;
 }
 
@@ -26,11 +29,11 @@ html, body {
 }
 .container-fluid {
   height:100%;
-  background: blue;
+  /*background: blue;*/
 }
 .tab-content {
   /*height:100%;*/
-  background: red;
+  /*background: red;*/
 }
 .full-size {
   height:100%;
