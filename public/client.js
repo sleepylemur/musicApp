@@ -474,7 +474,7 @@ function dragEndAdd(elmt) {
 
 function getServerData(route, next) {
   var xhr = new XMLHttpRequest();
-  xhr.open("GET","http://localhost:3000"+route,true);
+  xhr.open("GET",location.origin+route,true);
   xhr.onload = function() {
     next(JSON.parse(xhr.response));
   };
@@ -482,7 +482,7 @@ function getServerData(route, next) {
 }
 function sendServerDelete(route, next) {
   var xhr = new XMLHttpRequest();
-  xhr.open("DELETE","http://localhost:3000"+route,true);
+  xhr.open("DELETE",location.origin+route,true);
   xhr.onload = function() {
     next();
   };
@@ -490,7 +490,7 @@ function sendServerDelete(route, next) {
 }
 function sendServerPost(route, data, next) {
   var xhr = new XMLHttpRequest();
-  xhr.open("POST","http://localhost:3000"+route,true);
+  xhr.open("POST",location.origin+route,true);
   xhr.onload = function() {
     next();
   };
