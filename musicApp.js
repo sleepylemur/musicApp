@@ -5,7 +5,7 @@ var bodyParser = require('body-parser');
 var db = new sqlite3.Database('music.db');
 
 var app = express();
-app.use(express.static('public'));
+app.use(express.static(__dirname + '/public'));
 app.use(bodyParser.urlencoded({extended:false}));
 
 app.get('/', function(req,res) {
