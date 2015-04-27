@@ -1,29 +1,91 @@
 footer {
   display: block;
-  position: fixed;
+  position: absolute;
   bottom: 0;
   text-align: center;
+  height: 100px;
   /*background: blue;*/
   width: 100%;
-  background: rgba(255,255,255,0.8);
+  /*background: rgba(255,255,0,0.8);*/
 }
 header {
-  background:purple;
+  position: absolute;
+  top: 0;
+  height: 50px;
+  width: 100%;
+  /*background: rgba(255,200,255, 0.8);*/
+}
+.contentheader {
+  /*background: rgba(200,255,200, 0.8);*/
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 50px;
+  margin: 50px 0px;
+  text-align: center;
+}
+.contentmain {
+  /*background: rgba(200,200,255, 0.8);*/
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  margin: 100px 0px;
+  /*margin-bottom: 100px;*/
+  overflow: scroll;
+}
+.contentmainwithsidebar {
+  /*background: rgba(200,200,255, 0.8);*/
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  margin: 100px 0px 100px 50px;
+  overflow: scroll;
+}
+.contentsidebar {
+  /*background: rgba(233,220,233, 0.8);*/
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 50px;
+  margin: 100px 0px;
+}
+.vertcenter {
+  /*display:inline-block;*/
+  position: absolute;
+  top: 50%;
+  left: 12px;
+  text-align: center;
+  margin-top: -25px;
+  font-size: 26px;
 }
 
+/*a[href="#manage-add"] {
+  display:none;
+  background: blue;
+}*/
 #songinfo {
   /*display:inline-block;*/
-  font-size: 30px;
+  font-size: 26px;
+  height: 50px;
+  padding:5px;
+  border: 1px solid rgba(0,0,0,0.5);
+  overflow: hidden;
 }
 
 #mrfloat {
   position:absolute;
-  /*padding: 10px;*/
+  padding: 9px 14px;
   display:none;
   border: 1px solid black;
   /*background-color: red;*/
-  backgroud-color: white;
-  box-shadow: 10px 5px 5px rgba(0,0,0,0.3);
+  background-color: white;
+  box-shadow: 5px 5px 10px rgba(0,0,0,0.3);
   z-index: 10;
 }
 
@@ -33,6 +95,8 @@ html, body {
 }
 .container-fluid {
   height:100%;
+  box-sizing: border-box;
+  padding-bottom: 200px;
   /*background: blue;*/
 }
 .tab-content {
@@ -50,4 +114,15 @@ html, body {
   display: inline-block;
   width: 100%;
   background-color: blue;
+}
+
+.floatright {
+  float: right;
+}
+
+.playlistinfo {
+  float: left;
+  margin-left: 20px;
+  font-size: 16px;
+  max-width: 33%;
 }

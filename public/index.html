@@ -12,60 +12,73 @@
 </head>
 <body>
 
-  <div class="container-fluid">
+  <header>
     <div role="tabpanel">
       <ul class="nav nav-tabs" role="tablist">
         <li class="active"><a href="#play" data-toggle="tab">Play</a></li>
         <li><a href="#manage" data-toggle="tab">Manage</a></li>
+        <li><a href="#manage-add" data-toggle="tab">Manage2</a></li>
         <li><a href="#acquire" data-toggle="tab">Acquire</a></li>
       </ul>
     </div>
+  </header>
 
-    <div class="tab-content fullsize">
+    <div class="tab-content">
       <div role="tabpanel" class="tab-pane active" id="play">
 
         <!-- play pane -->
-        <div class="btn-group">
-          <button id="playpaneplaylistbutton" type="button" class="btn btn-default">Playlist</button>
-          <button id="playpanesongbutton" type="button" class="btn btn-default">Song</button>
-          <button id="playpaneartistbutton" type="button" class="btn btn-default">Artist</button>
+        <div class="contentheader">
+          <div class="btn-group">
+            <button id="playpaneplaylistbutton" type="button" class="btn btn-default">Playlist</button>
+            <button id="playpanesongbutton" type="button" class="btn btn-default">Song</button>
+            <button id="playpaneartistbutton" type="button" class="btn btn-default">Artist</button>
+          </div>
         </div>
-
-        <div class="panel-group" id="accordionplay"></div>
+        <div class="contentmain">
+          <div class="panel-group" id="accordionplay"></div>
+        </div>
       </div>
       <div role="tabpanel" class="tab-pane" id="manage">
 
         <!-- playlist management pane -->
-        <div class="row">
-          <div class="col-xs-1" id="trashdiv">
-              delete
+        <div class="contentheader">
+          <button  id="buttonnewplaylist" type="button" class="btn btn-default center-block">New Playlist</button>
+        </div>
+        <div class="contentsidebar">
+          <div class="vertcenter">
+            <span class="glyphicon glyphicon-trash"></span>
           </div>
-          <div class="col-xs-10">
-            <button  id="buttonnewplaylist" type="button" class="btn btn-default center-block">New Playlist</button>
-            <div class="panel-group" id="accordiondelete"></div>
-          </div>
-          <div class="col-xs-1" id="gotoadddiv">
-            add to playlist
-          </div>
+        </div>
+        <div class="contentmainwithsidebar">
+          <div class="panel-group" id="accordiondelete"></div>
         </div>
       </div>
       <div role="tabpanel" class="tab-pane" id="manage-add">
-        <div class="col-xs-1" id="gotodeletediv">
-          drag here to add to playlist
-        </div>
-        <div class="col-xs-11">
+        <div class="contentheader">
+          <div class="playlistinfo" id="selectedPlaylistInfo">
+            happy songs
+          </div>
           <div class="btn-group">
             <button id="addpaneplaylistbutton" type="button" class="btn btn-default">Playlist</button>
             <button id="addpanesongbutton" type="button" class="btn btn-default">Song</button>
             <button id="addpaneartistbutton" type="button" class="btn btn-default">Artist</button>
           </div>
+        </div>
+        <div class="contentsidebar" id="gotodeletediv">
+          <div class="vertcenter">
+            <span class="glyphicon glyphicon-plus"></span>
+          </div>
+        </div>
+        <div class="contentmainwithsidebar">
           <div class="panel-group" id="accordionadd"></div>
         </div>
       </div>
       <div role="tabpanel" class="tab-pane" id="acquire">
 
         <!-- acquire pane -->
-        add songs to your collection here
+        <div class="contentheader">
+         add songs to your collection here
+        </div>
       </div>
 
     </div>

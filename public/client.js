@@ -5,6 +5,44 @@ var currentSongId = -1, currentSongGroupName = "", currentSongGroupType = "song"
 var mrfloat = document.getElementById("mrfloat");
 
 var songInfoDiv = document.getElementById("songinfo");
+var playlistinfo = document.getElementById("selectedPlaylistInfo");
+
+// state vars
+var panestate = {
+  playSelectedGroup:"",
+  playSelectedGroupType:"song",
+  deleteSelectedGroup:"",
+  addSelectedGroup:"",
+  addSelectedGroupType:"song",
+  currentPane:"play",
+  getCurGroup:function() {
+    if (this.currentPane === "play") {
+      return this.playSelectedGroup;
+    } else if (this.currentPane === "delete") {
+      return this.deleteSelectedGroup;
+    } else if (this.currentPane === "add") {
+      return this.addSelectedGroup;
+    }
+  },
+  getCurType:function() {
+    if (this.currentPane === "play") {
+      return this.playSelectedGroupType;
+    } else if (this.currentPane === "delete") {
+      return "playlist";
+    } else if (this.currentPane === "add") {
+      return this.addSelectedGroupType;
+    }
+  },
+  displayByState:function(div,songlinker,grouplinker) {
+    if (this.getCurType() === "song") {
+      displaySongsBySong(div,songlinker, grouplinker);
+    } else if (this.getCurType() === "artist") {
+      displaySongsByArtist(div,songlinker, grouplinker);
+    } else if (this.getCurType() === "playlist") {
+      displaySongsByPlaylist(div,songlinker, grouplinker);
+    }
+  }
+};
 
 
 // ***************** play pane init *****************
@@ -12,11 +50,23 @@ var songInfoDiv = document.getElementById("songinfo");
 var accordionPlay = document.getElementById("accordionplay");
 
 // add display-by song/playlist/artist button eventlisteners
-document.getElementById("playpaneplaylistbutton").addEventListener('click',displaySongsByPlaylist.bind(null,accordionPlay,playPaneSongLinker, playPaneGroupLinker));
-document.getElementById("playpanesongbutton").addEventListener('click',displaySongsBySong.bind(null,accordionPlay,playPaneSongLinker, null));
-document.getElementById("playpaneartistbutton").addEventListener('click',displaySongsByArtist.bind(null,accordionPlay,playPaneSongLinker, playPaneGroupLinker));
+// document.getElementById("playpaneplaylistbutton").addEventListener('click',displaySongsByPlaylist.bind(null,accordionPlay,playPaneSongLinker, playPaneGroupLinker));
+// document.getElementById("playpanesongbutton").addEventListener('click',displaySongsBySong.bind(null,accordionPlay,playPaneSongLinker, null));
+// document.getElementById("playpaneartistbutton").addEventListener('click',displaySongsByArtist.bind(null,accordionPlay,playPaneSongLinker, playPaneGroupLinker));
+document.getElementById("playpaneplaylistbutton").addEventListener('click',function() {
+  panestate.playSelectedGroupType = "playlist";
+  panestate.displayByState(accordionPlay,playPaneSongLinker, playPaneGroupLinker);
+});
+document.getElementById("playpanesongbutton").addEventListener('click',function() {
+  panestate.playSelectedGroupType = "song";
+  panestate.displayByState(accordionPlay,playPaneSongLinker, playPaneGroupLinker);
+});
+document.getElementById("playpaneartistbutton").addEventListener('click',function() {
+  panestate.playSelectedGroupType = "artist";
+  panestate.displayByState(accordionPlay,playPaneSongLinker, playPaneGroupLinker);
+});
 
-displaySongsBySong(accordionPlay,playPaneSongLinker);
+panestate.displayByState(accordionPlay,playPaneSongLinker, playPaneGroupLinker);
 playNext();
 
 
@@ -31,14 +81,20 @@ document.getElementById("buttonnewplaylist").addEventListener('click', newPlayli
 //   $('#manage-add').hide();
 // });
 
-var gotoAddDiv = document.getElementById("gotoadddiv");
-$('#manage-add').hide();
-gotoAddDiv.addEventListener('click', function() {
-  $('#manage').hide();
-  $('#manage-add').show();
+$('a[href="#manage-add"]').hide(); // make 3rd tab button invisible
+$('a[href="#play"]').on('show.bs.tab', function(evt) {
+  panestate.currentPane = "play";
+  panestate.displayByState(accordionPlay,playPaneSongLinker, playPaneGroupLinker);
+});
+$('a[href="#manage"]').on('show.bs.tab', function(evt) {
+  panestate.currentPane = "delete";
+  panestate.displayByState(accordionDelete,deletePaneSongLinker, deletePaneGroupLinker);
+});
+$('a[href="#manage-add"]').on('show.bs.tab', function(evt) {
+  panestate.currentPane = "add";
+  panestate.displayByState(accordionAdd,addPaneSongLinker, addPaneGroupLinker);
 });
 
-displaySongsByPlaylist(accordionDelete,deletePaneSongLinker, deletePanePlaylistLinker);
 
 
 // ***************** manage button response functions *****************
@@ -66,7 +122,7 @@ function createPlaylist(elmt,evt) {
       newname = elmt.value + " "+counter++;
     }
     sendServerPost("/playlists", "name="+newname, function() {
-      displaySongsByPlaylist(accordionDelete,deletePaneSongLinker,deletePanePlaylistLinker);
+      displaySongsByPlaylist(accordionDelete,deletePaneSongLinker,deletePaneGroupLinker);
     });
   });
 
@@ -85,13 +141,24 @@ var accordionAdd = document.getElementById("accordionadd");
 
 var gotoDeleteDiv = document.getElementById("gotodeletediv");
 gotoDeleteDiv.addEventListener('click', function() {
-  $('#manage').show();
-  $('#manage-add').hide();
+  $('a[href="#manage"]').click();
 });
 
-document.getElementById("addpaneplaylistbutton").addEventListener('click',displaySongsByPlaylist.bind(null,accordionAdd,addPaneSongLinker, addPaneGroupLinker));
-document.getElementById("addpanesongbutton").addEventListener('click',displaySongsBySong.bind(null,accordionAdd,addPaneSongLinker, null));
-document.getElementById("addpaneartistbutton").addEventListener('click',displaySongsByArtist.bind(null,accordionAdd,addPaneSongLinker, addPaneGroupLinker));
+document.getElementById("addpaneplaylistbutton").addEventListener('click',function() {
+  panestate.addSelectedGroupType = "playlist";
+  panestate.displayByState(accordionAdd,addPaneSongLinker, addPaneGroupLinker);
+});
+document.getElementById("addpanesongbutton").addEventListener('click',function() {
+  panestate.addSelectedGroupType = "song";
+  panestate.displayByState(accordionAdd,addPaneSongLinker, addPaneGroupLinker);
+});
+document.getElementById("addpaneartistbutton").addEventListener('click',function() {
+  panestate.addSelectedGroupType = "artist";
+  panestate.displayByState(accordionAdd,addPaneSongLinker, addPaneGroupLinker);
+});
+// document.getElementById("addpaneplaylistbutton").addEventListener('click',displaySongsByPlaylist.bind(null,accordionAdd,addPaneSongLinker, addPaneGroupLinker));
+// document.getElementById("addpanesongbutton").addEventListener('click',displaySongsBySong.bind(null,accordionAdd,addPaneSongLinker, null));
+// document.getElementById("addpaneartistbutton").addEventListener('click',displaySongsByArtist.bind(null,accordionAdd,addPaneSongLinker, addPaneGroupLinker));
 
 // ***************** play button response functions *****************
 
@@ -187,17 +254,22 @@ function createAccordionNode(parentdiv, groupdivid, groupname, songs, grouptype,
   outerpanel.setAttribute("class","panel panel-default");
   var panelheading = document.createElement("div");
   panelheading.setAttribute("class","panel-heading");
+  // var title = document.createElement("h4");
+  // title.setAttribute("class","panel-title");
+  // title.appendChild(document.createTextNode(groupname));
+  // panelheading.appendChild(title);
+  panelheading.appendChild(document.createTextNode(groupname));
   var collapseid = grouplinker(panelheading, groupdivid, groupname, grouptype);
-  var title = document.createElement("h4");
-  title.setAttribute("class","panel-title");
-  title.appendChild(document.createTextNode(groupname));
-  panelheading.appendChild(title);
   outerpanel.appendChild(panelheading);
 
   // create song list for artist
   var collapse = document.createElement("div");
   collapse.setAttribute("id", collapseid);
-  collapse.setAttribute("class","panel-collapse collapse");
+  if (panestate.getCurGroup() === groupname) {
+    collapse.setAttribute("class","panel-collapse collapse in");
+  } else {
+    collapse.setAttribute("class","panel-collapse collapse");
+  }
   collapse.setAttribute("data-parent","#"+parentdiv.id);
   collapse.appendChild(createSongListNode(songs, groupname, grouptype, linker));
   outerpanel.appendChild(collapse);
@@ -229,7 +301,14 @@ function playPaneSongLinker( elmt, position, songid, groupname, grouptype) {
   elmt.addEventListener('click', playSong.bind(null, position, songid, groupname, grouptype));
 }
 function playPaneGroupLinker( elmt, groupdivid, groupname, grouptype ) {
-  elmt.addEventListener('click', function(elmt) {$("#pcollapse"+groupdivid).collapse('toggle');}.bind(null,elmt));
+  elmt.addEventListener('click', function(elmt) {
+    if (document.getElementById("pcollapse"+groupdivid).className.split(' ').indexOf('in') === -1) { // if group was collapsed
+      panestate.playSelectedGroup = groupname;
+    } else {
+      panestate.playSelectedGroup = "";
+    }
+    $("#pcollapse"+groupdivid).collapse('toggle');
+  }.bind(null,elmt));
   return "pcollapse"+groupdivid;
 }
 
@@ -240,11 +319,33 @@ function deletePaneSongLinker( elmt, position, songid, groupname, grouptype) {
   attachHammer(elmt,"red",dragEndDelete);
 }
 
-function deletePanePlaylistLinker( elmt, groupdivid, groupname, grouptype) {
+function deletePaneGroupLinker( elmt, groupdivid, groupname, grouptype) {
+  var plusicon = document.createElement("span");
+  plusicon.className = "glyphicon glyphicon-plus floatright";
+  // plusicon.className = "badge";
+  // plusicon.appendChild(document.createTextNode("+"));
+  // plusicon.addEventListener('click', function(evt) {console.log("yo"); preventDefault(evt);});
+  elmt.appendChild(plusicon);
+
   elmt.dataset.isa = "playlist";
   elmt.dataset.name = groupname;
   var hammertime = attachHammer(elmt,"red",dragEndDelete);
-  hammertime.on('tap', function(elmt) {$("#dcollapse"+groupdivid).collapse('toggle');}.bind(null,elmt));
+  hammertime.on('tap', function(elmt,evt) {
+    var bounds = elmt.getBoundingClientRect();
+    if (bounds.right - evt.srcEvent.clientX < 37) { // if they clicked on the plus then take them to playlist song add page
+      selectedPlaylist = groupname;
+      playlistinfo.innerHTML = "Add to "+groupname;
+      // console.log(groupname);
+      $('a[href="#manage-add"]').click();
+    } else {
+      if (document.getElementById("dcollapse"+groupdivid).className.split(' ').indexOf('in') === -1) { // if group was collapsed
+        panestate.deleteSelectedGroup = groupname;
+      } else {
+        panestate.deleteSelectedGroup = "";
+      }
+      $("#dcollapse"+groupdivid).collapse('toggle');
+    }
+  }.bind(null,elmt));
   return "dcollapse"+groupdivid;
 }
 
@@ -258,7 +359,14 @@ function addPaneGroupLinker( elmt, groupdivid, groupname, grouptype) {
   elmt.dataset.isa = grouptype;
   elmt.dataset.name = groupname;
   var hammertime = attachHammer(elmt,"green",dragEndAdd);
-  hammertime.on('tap', function(elmt) {$("#acollapse"+groupdivid).collapse('toggle');}.bind(null,elmt));
+  hammertime.on('tap', function(elmt) {
+    if (document.getElementById("acollapse"+groupdivid).className.split(' ').indexOf('in') === -1) { // if group was collapsed
+      panestate.addSelectedGroup = groupname;
+    } else {
+      panestate.addSelectedGroup = "";
+    }
+    $("#acollapse"+groupdivid).collapse('toggle');
+  }.bind(null,elmt));
   return "acollapse"+groupdivid;
 }
 
@@ -271,6 +379,7 @@ function attachHammer(elmt,color,end) {
   hammertime.on('pan', handleDrag.bind(null,elmt,color,end));
   hammertime.get('pan').set({ direction: Hammer.DIRECTION_ALL });
   hammertime.on('tap', handleDragEnd.bind(null,elmt,color,end));
+  hammertime.on('pressup', handleDragEnd.bind(null,elmt,color,end));
   return hammertime;
 }
 
@@ -304,7 +413,11 @@ function handleDragEnd(elmt, color, end, evt) {
   if (evt.deltaX < -100) {
     end(elmt);
   } else {
-    elmt.style.background = "white";
+    if (elmt.dataset.isa === "playlist") {
+      elmt.style.background = 'rgb(242,242,242)';
+    } else {
+      elmt.style.background = 'white';
+    }
   }
   mrfloat.style.display = "none";
   mrfloat.style.background = "white";
@@ -313,11 +426,13 @@ function handleDragEnd(elmt, color, end, evt) {
 function dragEndDelete(elmt) {
   if (elmt.dataset.isa === "playlist") {
     sendServerDelete("/playlist/"+elmt.dataset.name, function() {
-      displaySongsByPlaylist(accordionDelete,deletePaneSongLinker, deletePanePlaylistLinker);
+      // elmt.parentNode.removeChild(elmt);
+      displaySongsByPlaylist(accordionDelete,deletePaneSongLinker, deletePaneGroupLinker);
     });
   } else if (elmt.dataset.isa === "song") {
     sendServerDelete("/playlist/"+elmt.dataset.groupname+"/position/"+elmt.dataset.position, function() {
-      displaySongsByPlaylist(accordionDelete,deletePaneSongLinker, deletePanePlaylistLinker);
+      // elmt.parentNode.removeChild(elmt);
+      displaySongsByPlaylist(accordionDelete,deletePaneSongLinker, deletePaneGroupLinker);
     });
   }
 }
