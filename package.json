@@ -1,0 +1,19 @@
+{
+  "name": "musicApp",
+  "version": "1.0.0",
+  "description": "music app",
+  "main": "musicApp.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/sleepylemur/musicApp.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/sleepylemur/musicApp/issues"
+  },
+  "homepage": "https://github.com/sleepylemur/musicApp"
+}
