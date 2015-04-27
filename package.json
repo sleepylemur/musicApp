@@ -15,5 +15,10 @@
   "bugs": {
     "url": "https://github.com/sleepylemur/musicApp/issues"
   },
-  "homepage": "https://github.com/sleepylemur/musicApp"
+  "homepage": "https://github.com/sleepylemur/musicApp",
+  "dependencies": {
+    "body-parser": "^1.12.3",
+    "express": "^4.12.3",
+    "sqlite3": "^3.0.5"
+  }
 }
