@@ -22,8 +22,21 @@ playNext();
 
 // ***************** manage pane init *****************
 
+var selectedPlaylist = "playlist1";
 var accordionDelete = document.getElementById("accordiondelete");
 document.getElementById("buttonnewplaylist").addEventListener('click', newPlaylist);
+// <a href="#manage" data-toggle="tab">Manage</a>
+// $('a[href="#manage"]').on('show.bs.tab', function(evt) {
+//   $('#manage').show();
+//   $('#manage-add').hide();
+// });
+
+var gotoAddDiv = document.getElementById("gotoadddiv");
+$('#manage-add').hide();
+gotoAddDiv.addEventListener('click', function() {
+  $('#manage').hide();
+  $('#manage-add').show();
+});
 
 displaySongsByPlaylist(accordionDelete,deletePaneSongLinker, deletePanePlaylistLinker);
 
@@ -63,15 +76,22 @@ function createPlaylist(elmt,evt) {
     }
     return false;
   }
-  // var newplaylists = {};
-  // newplaylists[newname] = [];
-  // for (key in playlists) {
-  //   newplaylists[key] = playlists[key];
-  // }
-  // playlists = newplaylists;
-  // elmt.parentNode.removeChild(elmt);
-  // displaySongsByPlaylist(accordionDelete,deletePaneSongLinker,deletePanePlaylistLinker);
 }
+
+
+// ***************** add pane init *****************
+
+var accordionAdd = document.getElementById("accordionadd");
+
+var gotoDeleteDiv = document.getElementById("gotodeletediv");
+gotoDeleteDiv.addEventListener('click', function() {
+  $('#manage').show();
+  $('#manage-add').hide();
+});
+
+document.getElementById("addpaneplaylistbutton").addEventListener('click',displaySongsByPlaylist.bind(null,accordionAdd,addPaneSongLinker, addPaneGroupLinker));
+document.getElementById("addpanesongbutton").addEventListener('click',displaySongsBySong.bind(null,accordionAdd,addPaneSongLinker, null));
+document.getElementById("addpaneartistbutton").addEventListener('click',displaySongsByArtist.bind(null,accordionAdd,addPaneSongLinker, addPaneGroupLinker));
 
 // ***************** play button response functions *****************
 
@@ -156,62 +176,6 @@ function playNext() {
 }
 
 
-// ***************** drag helper functions *****************
-
-function attachHammer(elmt) {
-  elmt.addEventListener('mousedown', handleDragStart.bind(null,elmt));
-  var hammertime = new Hammer(elmt);
-  hammertime.on('pan', handleDrag.bind(null,elmt));
-  hammertime.get('pan').set({ direction: Hammer.DIRECTION_ALL });
-  hammertime.on('tap', handleDragEnd.bind(null,elmt));
-  return hammertime;
-}
-
-function handleDragStart(elmt, evt) {
-  var bounds = elmt.getBoundingClientRect();
-  mrfloat.style.left = bounds.left+"px";
-  mrfloat.style.top = bounds.top+"px";
-  mrfloat.style.width = bounds.width+"px";
-  mrfloat.style.height = bounds.height+"px";
-  mrfloat.innerHTML = elmt.innerHTML;
-  mrfloat.style.display = "inline-block";
-  elmt.style.background = "lightgray";
-}
-
-function handleDrag(elmt, evt) {
-  if (evt.deltaX < -100) {
-    mrfloat.style.background = "red";
-  } else {
-    mrfloat.style.background = "white";
-  }
-  if (evt.isFinal) {
-    handleDragEnd(elmt,evt);
-  } else {
-    var bounds = elmt.getBoundingClientRect();
-    mrfloat.style.left = bounds.left + evt.deltaX + "px";
-    // mrfloat.style.top = bounds.top + evt.deltaY + "px";
-  }
-}
-
-function handleDragEnd(elmt, evt) {
-  if (evt.deltaX < -100) {
-    if (elmt.dataset.isa === "playlist") {
-      sendServerDelete("/playlist/"+elmt.dataset.name, function() {
-        displaySongsByPlaylist(accordionDelete,deletePaneSongLinker, deletePanePlaylistLinker);
-      });
-    } else if (elmt.dataset.isa === "song") {
-      sendServerDelete("/playlist/"+elmt.dataset.groupname+"/position/"+elmt.dataset.position, function() {
-        displaySongsByPlaylist(accordionDelete,deletePaneSongLinker, deletePanePlaylistLinker);
-      });
-    }
-  } else {
-    elmt.style.background = "white";
-  }
-  mrfloat.style.display = "none";
-  mrfloat.style.background = "white";
-}
-
-
 // ***************** list display functions *****************
 
 // helper function to create an accordion songlist panel
@@ -223,7 +187,7 @@ function createAccordionNode(parentdiv, groupdivid, groupname, songs, grouptype,
   outerpanel.setAttribute("class","panel panel-default");
   var panelheading = document.createElement("div");
   panelheading.setAttribute("class","panel-heading");
-  var collapseid = grouplinker(panelheading, groupdivid, groupname);
+  var collapseid = grouplinker(panelheading, groupdivid, groupname, grouptype);
   var title = document.createElement("h4");
   title.setAttribute("class","panel-title");
   title.appendChild(document.createTextNode(groupname));
@@ -264,7 +228,7 @@ function createSongListNode(songs, groupname, grouptype, linker) {
 function playPaneSongLinker( elmt, position, songid, groupname, grouptype) {
   elmt.addEventListener('click', playSong.bind(null, position, songid, groupname, grouptype));
 }
-function playPaneGroupLinker( elmt, groupdivid, groupname ) {
+function playPaneGroupLinker( elmt, groupdivid, groupname, grouptype ) {
   elmt.addEventListener('click', function(elmt) {$("#pcollapse"+groupdivid).collapse('toggle');}.bind(null,elmt));
   return "pcollapse"+groupdivid;
 }
@@ -273,15 +237,97 @@ function deletePaneSongLinker( elmt, position, songid, groupname, grouptype) {
   elmt.dataset.isa = "song";
   elmt.dataset.groupname = groupname;
   elmt.dataset.position = position;
-  attachHammer(elmt);
+  attachHammer(elmt,"red",dragEndDelete);
 }
 
-function deletePanePlaylistLinker( elmt, groupdivid, groupname) {
+function deletePanePlaylistLinker( elmt, groupdivid, groupname, grouptype) {
   elmt.dataset.isa = "playlist";
   elmt.dataset.name = groupname;
-  var hammertime = attachHammer(elmt);
+  var hammertime = attachHammer(elmt,"red",dragEndDelete);
   hammertime.on('tap', function(elmt) {$("#dcollapse"+groupdivid).collapse('toggle');}.bind(null,elmt));
   return "dcollapse"+groupdivid;
+}
+
+function addPaneSongLinker( elmt, position, songid, groupname, grouptype) {
+  elmt.dataset.isa = "song";
+  elmt.dataset.id = songid;
+  attachHammer(elmt,"green",dragEndAdd);
+}
+
+function addPaneGroupLinker( elmt, groupdivid, groupname, grouptype) {
+  elmt.dataset.isa = grouptype;
+  elmt.dataset.name = groupname;
+  var hammertime = attachHammer(elmt,"green",dragEndAdd);
+  hammertime.on('tap', function(elmt) {$("#acollapse"+groupdivid).collapse('toggle');}.bind(null,elmt));
+  return "acollapse"+groupdivid;
+}
+
+
+// ***************** drag helper functions *****************
+
+function attachHammer(elmt,color,end) {
+  elmt.addEventListener('mousedown', handleDragStart.bind(null,elmt,color,end));
+  var hammertime = new Hammer(elmt);
+  hammertime.on('pan', handleDrag.bind(null,elmt,color,end));
+  hammertime.get('pan').set({ direction: Hammer.DIRECTION_ALL });
+  hammertime.on('tap', handleDragEnd.bind(null,elmt,color,end));
+  return hammertime;
+}
+
+function handleDragStart(elmt, color, end, evt) {
+  var bounds = elmt.getBoundingClientRect();
+  mrfloat.style.left = bounds.left+"px";
+  mrfloat.style.top = bounds.top+"px";
+  mrfloat.style.width = bounds.width+"px";
+  mrfloat.style.height = bounds.height+"px";
+  mrfloat.innerHTML = elmt.innerHTML;
+  mrfloat.style.display = "inline-block";
+  elmt.style.background = "lightgray";
+}
+
+function handleDrag(elmt, color, end, evt) {
+  if (evt.deltaX < -100) {
+    mrfloat.style.background = color;
+  } else {
+    mrfloat.style.background = "white";
+  }
+  if (evt.isFinal) {
+    handleDragEnd(elmt, color, end ,evt);
+  } else {
+    var bounds = elmt.getBoundingClientRect();
+    mrfloat.style.left = bounds.left + evt.deltaX + "px";
+    // mrfloat.style.top = bounds.top + evt.deltaY + "px";
+  }
+}
+
+function handleDragEnd(elmt, color, end, evt) {
+  if (evt.deltaX < -100) {
+    end(elmt);
+  } else {
+    elmt.style.background = "white";
+  }
+  mrfloat.style.display = "none";
+  mrfloat.style.background = "white";
+}
+
+function dragEndDelete(elmt) {
+  if (elmt.dataset.isa === "playlist") {
+    sendServerDelete("/playlist/"+elmt.dataset.name, function() {
+      displaySongsByPlaylist(accordionDelete,deletePaneSongLinker, deletePanePlaylistLinker);
+    });
+  } else if (elmt.dataset.isa === "song") {
+    sendServerDelete("/playlist/"+elmt.dataset.groupname+"/position/"+elmt.dataset.position, function() {
+      displaySongsByPlaylist(accordionDelete,deletePaneSongLinker, deletePanePlaylistLinker);
+    });
+  }
+}
+function dragEndAdd(elmt) {
+  elmt.style.background = "white";
+  if (elmt.dataset.isa === "song") {
+    sendServerPost("/playlist/"+selectedPlaylist, "id="+elmt.dataset.id, function() {});
+  } else {
+    sendServerPost("/playlist/"+selectedPlaylist+"/addgroup", "type="+elmt.dataset.isa+"&name="+elmt.dataset.name, function() {});
+  }
 }
 
 

@@ -173,6 +173,33 @@ app.post('/playlists', function(req,res) {
   });
 });
 
+// add song to playlist
+app.post('/playlist/:playlist', function(req,res) {
+  db.run('INSERT INTO playlistsongs (name,songid) VALUES (?,?)',
+    req.params.playlist, req.body.id, function(err) {
+      if (err) console.log(err);
+      res.end();
+    }
+  );
+});
+
+// add group of songs to playlist
+app.post('/playlist/:playlist/addgroup', function(req,res) {
+  if (req.body.type === 'artist') {
+    db.run('INSERT INTO playlistsongs (name,songid) SELECT ?,id FROM songs WHERE artist = ?', req.params.playlist, req.body.name, function(err) {
+      if (err) console.log(err);
+      res.end();
+    });
+  } else if (req.body.type === 'playlist') {
+    db.run('INSERT INTO playlistsongs (name,songid) SELECT ?,songid FROM playlistsongs WHERE name = ?', req.params.playlist, req.body.name, function(err) {
+      if (err) console.log(err);
+      res.end();
+    });
+  } else {
+    throw("unknown group type");
+  }
+});
+
 app.delete('/playlist/:name', function(req,res) {
   db.run('DELETE FROM playlists WHERE name = ?', req.params.name, function(err) {
     if (err) throw(err);

@@ -5,6 +5,10 @@ footer {
   text-align: center;
   /*background: blue;*/
   width: 100%;
+  background: rgba(255,255,255,0.8);
+}
+header {
+  background:purple;
 }
 
 #songinfo {
