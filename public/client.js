@@ -7,6 +7,7 @@ var mrfloat = document.getElementById("mrfloat");
 var songInfoDiv = document.getElementById("songinfo");
 var playlistinfo = document.getElementById("selectedPlaylistInfo");
 
+
 // state vars
 var panestate = {
   playSelectedGroup:"",
@@ -33,6 +34,15 @@ var panestate = {
       return this.addSelectedGroupType;
     }
   },
+  reloadDisplay:function() {
+    if (this.currentPane === "play") {
+      this.displayByState(accordionPlay, playPaneSongLinker, playPaneGroupLinker);
+    } else if (this.currentPane === "delete") {
+      this.displayByState(accordionDelete, deletePaneSongLinker, deletePaneGroupLinker);
+    } else if (this.currentPane === "add") {
+      this.displayByState(accordionAdd, addPaneSongLinker, addPaneGroupLinker);
+    }
+  },
   displayByState:function(div,songlinker,grouplinker) {
     if (this.getCurType() === "song") {
       displaySongsBySong(div,songlinker, grouplinker);
@@ -43,6 +53,16 @@ var panestate = {
     }
   }
 };
+
+var searchstring = "";
+var searchbox = document.getElementById("searchbox");
+searchbox.addEventListener("keypress", function(evt) {
+  if (evt.keyCode === 13) {searchbox.blur();}
+});
+searchbox.addEventListener("blur", function(evt) {
+  searchstring = searchbox.value;
+  panestate.reloadDisplay();
+});
 
 
 // ***************** play pane init *****************
@@ -163,7 +183,9 @@ document.getElementById("addpaneartistbutton").addEventListener('click',function
 // ***************** play button response functions *****************
 
 function displaySongsByArtist(targetdiv,linker,grouplinker) {
-  getServerData("/songs", function(songs) {
+  var route = "/songs";
+  if (searchstring !== "") route += "?search="+searchstring;
+  getServerData(route, function(songs) {
     var artists = {};
     songs.forEach(function(song) {
       if (typeof artists[song.artist] === 'undefined') artists[song.artist] = [];
@@ -183,7 +205,9 @@ function displaySongsByArtist(targetdiv,linker,grouplinker) {
 function displaySongsByPlaylist(targetdiv,linker,grouplinker) {
   targetdiv.innerHTML = "";
   var playlistid = 0;
-  getServerData("/songs?playlist=", function(songs) {
+  var route = "/songs?playlist=";
+  if (searchstring !== "") route += "&search="+searchstring;
+  getServerData(route, function(songs) {
     var playlists = {};
     songs.forEach(function(song) {
       if (typeof playlists[song.playlist] === 'undefined') playlists[song.playlist] = [];
@@ -191,7 +215,6 @@ function displaySongsByPlaylist(targetdiv,linker,grouplinker) {
         playlists[song.playlist].push({id:song.id, name:song.name, artist:song.artist, position:song.position});
       }
     });
-    // console.log(playlists);
     for (playlistName in playlists) {
       targetdiv.appendChild(
         createAccordionNode(
@@ -210,13 +233,14 @@ function displaySongsByPlaylist(targetdiv,linker,grouplinker) {
 
 function displaySongsBySong(targetdiv,linker) {
   targetdiv.innerHTML = "";
-  getServerData("/songs", function(songs) {
+  var route = "/songs";
+  if (searchstring !== "") route += "?search="+searchstring;
+  getServerData(route, function(songs) {
     targetdiv.appendChild(createSongListNode(songs,0,"song",linker));
   });
 }
 
 function playSong(position, id, groupid, grouptype,evt) {
-  // console.log(arguments);
   evt.preventDefault();
   currentSongId = id;
   currentSongPosition = position;
@@ -228,14 +252,18 @@ function playSong(position, id, groupid, grouptype,evt) {
 }
 
 function playPrev() {
-  getServerData("/song/position/"+currentSongPosition+"?next=prev&"+currentSongGroupType+"="+currentSongGroupName, function(data) {
+  var route = "/song/position/"+currentSongPosition+"?next=prev&"+currentSongGroupType+"="+currentSongGroupName;
+  if (searchstring !== "") route += "&search="+searchstring;
+  getServerData(route, function(data) {
     currentSongPosition = data.position;
     currentSongId = data.song.id;
     songInfoDiv.innerHTML = data.song.name;
   });
 }
 function playNext() {
-  getServerData("/song/position/"+currentSongPosition+"?next=next&"+currentSongGroupType+"="+currentSongGroupName, function(data) {
+  var route = "/song/position/"+currentSongPosition+"?next=next&"+currentSongGroupType+"="+currentSongGroupName;
+  if (searchstring !== "") route += "&search="+searchstring;
+  getServerData(route, function(data) {
     currentSongPosition = data.position;
     currentSongId = data.song.id;
     songInfoDiv.innerHTML = data.song.name;
@@ -322,9 +350,6 @@ function deletePaneSongLinker( elmt, position, songid, groupname, grouptype) {
 function deletePaneGroupLinker( elmt, groupdivid, groupname, grouptype) {
   var plusicon = document.createElement("span");
   plusicon.className = "glyphicon glyphicon-plus floatright";
-  // plusicon.className = "badge";
-  // plusicon.appendChild(document.createTextNode("+"));
-  // plusicon.addEventListener('click', function(evt) {console.log("yo"); preventDefault(evt);});
   elmt.appendChild(plusicon);
 
   elmt.dataset.isa = "playlist";
@@ -335,7 +360,6 @@ function deletePaneGroupLinker( elmt, groupdivid, groupname, grouptype) {
     if (bounds.right - evt.srcEvent.clientX < 37) { // if they clicked on the plus then take them to playlist song add page
       selectedPlaylist = groupname;
       playlistinfo.innerHTML = "Add to "+groupname;
-      // console.log(groupname);
       $('a[href="#manage-add"]').click();
     } else {
       if (document.getElementById("dcollapse"+groupdivid).className.split(' ').indexOf('in') === -1) { // if group was collapsed

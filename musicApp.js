@@ -101,11 +101,11 @@ app.get('/songs', function(req,res) {
       if (typeof req.query.search !== 'undefined') {
         // retrieve all playlists with search
         var search = "%"+req.query.search+"%";
-        db.all("SELECT songs.id,songs.name,songs.artist,playlistsongs.position,playlists.name as playlist "+
+        db.all("SELECT DISTINCT songs.id,songs.name,songs.artist,playlistsongs.position,playlists.name as playlist "+
           "FROM playlists "+
           "LEFT OUTER JOIN playlistsongs ON playlists.name = playlistsongs.name "+
           "LEFT OUTER JOIN songs ON playlistsongs.songid = songs.id "+
-          "WHERE songs.name LIKE ? OR songs.artist LIKE ? ORDER BY playlists.name,playlistsongs.position",
+          "AND songs.name LIKE ? OR songs.artist LIKE ? ORDER BY playlists.name,playlistsongs.position",
           search, search, function(err,data) {
             res.json(data);
           }
@@ -159,10 +159,18 @@ app.get('/songs', function(req,res) {
       });
     }
   } else {
-    // retrieve all songs
-    db.all("SELECT id,name,artist FROM songs ORDER BY name", function(err,data) {
-      res.json(data);
-    });
+    if (typeof req.query.search !== 'undefined') {
+      // retrieve all songs with search
+      var search = "%"+req.query.search+"%";
+      db.all("SELECT id,name,artist FROM songs WHERE name LIKE ? OR artist LIKE ? ORDER BY name",search,search, function(err,data) {
+        res.json(data);
+      });
+    } else {
+      // retrieve all songs
+      db.all("SELECT id,name,artist FROM songs ORDER BY name", function(err,data) {
+        res.json(data);
+      });
+    }
   }
 });
 
