@@ -1,30 +1,29 @@
-music app
+#[musicApp](http://evangriffiths.nyc:3202)
 
-playlists of songs
-itunes style browse artist/album/song
-
-bootstrap table 
+###Goal
+Create an effective ui for managing playlists on a phone using swipeable lists.
 
 
+###Functionality overview
 
-two main functions: play, and manage playlists
+Two main functions: play, and manage playlists
 
 play -
-  choose playlist including all-music
+  - choose playlist including all-music
 
-  search bar, searches within current playlist
+  - search bar, searches within current playlist
 
-  top bar of songlist has 3 modes - 
+  - top bar of songlist has 3 modes - 
     songmode lists song titles only.
     album mode has everything sorted by artist then album
     artist mode has lists of songs by artist
 
 manage -
-  select the playlist to manage
+  - select the playlist to manage
     once playlist is selected, can switch between remove mode or add mode
 
-      in remove mode, display list of songs. slide them off to the left to remove them from the playlist. can click 
+      - in remove mode, display list of songs. slide them off to the left to remove them from the playlist. can click 
 
 
-  add songs to selected playlist
+  - add songs to selected playlist
 
